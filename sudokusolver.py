@@ -1,13 +1,13 @@
 import os
 from exactcover import createdancinglinks, exactcover
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from timeit import default_timer as timer
 import warnings
 
 
 class SudokuSolver:
     @classmethod
-    def readtxt(cls, fp):
+    def readtxt(cls, fp: str) -> List[List[int]]:
         '''
         Reads a text file containing a puzzle and returns it as a 2D matrix of int | None. Text
         files should represent puzzles as space-separated integers. '0's should be used to
@@ -27,7 +27,7 @@ class SudokuSolver:
         self.puzzle = puzzle
 
 
-    def solve(self):
+    def solve(self) -> List[List[int]]:
         '''
         Attempts to solve the current puzzle state.
         '''
@@ -45,7 +45,7 @@ class SudokuSolver:
         return self.puzzle
 
 
-    def creatematrix(self):
+    def creatematrix(self) -> Tuple[List[List[int]], List[Tuple[int, int, int]]]:
         '''
         Create matrix from current puzzle state.
         '''
@@ -62,7 +62,7 @@ class SudokuSolver:
         return mat, row_map
 
 
-    def generatematrow(self, row, col, digit):
+    def generatematrow(self, row: int, col: int, digit: int) -> List[int]:
         '''
         Generates the matrix row. Digit given should be from 0-8 inclusive.
         '''
@@ -78,14 +78,14 @@ class SudokuSolver:
         return ret
 
 
-    def creatematslice(self, row, col):
+    def creatematslice(self, row: int, col: int) -> List[List[int]]:
         '''
         Creates a slice of the matrix.
         '''
         return [self.generatematrow(row, col, digit) for digit in range(9)]
 
 
-    def dumpmatrix(m, row_map):
+    def dumpmatrix(m, row_map: List[Tuple[int, int, int]]) -> None:
         with open('matrix_dump.txt', 'w+') as file:
             lines = ['       ' + (''.join(str(i) for i in range(9)) * 9 * 4) + '\n']
             for i, r in enumerate(m):
@@ -97,7 +97,7 @@ class SudokuSolver:
             file.writelines(lines)
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         res = ''
         for row in self.puzzle:
             res += ' '.join(map(str, row)) + '\n'
