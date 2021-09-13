@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 puzzles/
+matrix_dump.txt
