@@ -113,12 +113,14 @@ if __name__ == '__main__':
             print('Time taken:', time_taken)
             times.append(time_taken)
 
-    print('Mean:', sum(times) / len(times))
+    times.sort()
+    len_times = len(times)
+    print('Mean:', sum(times) / len_times)
     print(
         'Median:',
-        sorted(times)[len(times) // 2]
-        if len(times) % 2 == 0 else
-        (sorted(times)[len(times) // 2] + sorted(times)[len(times) // 2 + 1]) / 2
+        times[len_times // 2]
+        if len_times % 2 == 0 else
+        (times[len_times // 2] + times[len_times // 2 + 1]) / 2
     )
     print('Max:', max(times))
     print('Min:', min(times))
