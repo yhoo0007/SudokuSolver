@@ -85,7 +85,7 @@ class SudokuSolver:
         return [self.generatematrow(row, col, digit) for digit in range(9)]
 
 
-    def dumpmatrix(m, row_map: List[Tuple[int, int, int]]) -> None:
+    def dumpmatrix(self, m: List[List[int]], row_map: List[Tuple[int, int, int]]) -> None:
         with open('matrix_dump.txt', 'w+') as file:
             lines = ['       ' + (''.join(str(i) for i in range(9)) * 9 * 4) + '\n']
             for i, r in enumerate(m):
