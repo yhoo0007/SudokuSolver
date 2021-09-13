@@ -89,10 +89,8 @@ class SudokuSolver:
         with open('matrix_dump.txt', 'w+') as file:
             lines = ['       ' + (''.join(str(i) for i in range(9)) * 9 * 4) + '\n']
             for i, r in enumerate(m):
-                res = f'r{row_map[i][0]}c{row_map[i][1]}#{row_map[i][2]} '
-                for c in r:
-                    res += str(c) if c != 0 else ' '
-                res += '\n'
+                res = f'r{row_map[i][0]}c{row_map[i][1]}#{row_map[i][2]} ' +\
+                        ''.join(map(lambda c: str(c) if c != 0 else ' ', r)) + '\n'
                 lines.append(res)
             file.writelines(lines)
 
