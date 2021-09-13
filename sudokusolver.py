@@ -31,14 +31,14 @@ class SudokuSolver:
         '''
         Attempts to solve the current puzzle state.
         '''
-        # create matrix from puzzle
+        # create exact cover matrix from puzzle
         matrix, row_map = self.creatematrix()
 
         # run exact cover
         dl = createdancinglinks(matrix)
         ans = exactcover(dl, partial_solution=[])
 
-        # translate exact cover result to puzzle
+        # translate exact cover result to solution
         for row, col, digit in map(lambda a: row_map[a.row], ans):
             self.puzzle[row][col] = digit
 
@@ -47,7 +47,8 @@ class SudokuSolver:
 
     def creatematrix(self) -> Tuple[List[List[int]], List[Tuple[int, int, int]]]:
         '''
-        Create matrix from current puzzle state.
+        Creates the exact cover matrix from current puzzle state. Refer to 
+        https://www.stolaf.edu/people/hansonr/sudoku/exactcovermatrix.htm for more info.
         '''
         mat = []
         row_map = []
@@ -64,7 +65,8 @@ class SudokuSolver:
 
     def generatematrow(self, row: int, col: int, digit: int) -> List[int]:
         '''
-        Generates the matrix row. Digit given should be from 0-8 inclusive.
+        Generates a row of the exact cover matrix corresponding to the given row, column, and
+        digit. Digit given should be from 0-8 inclusive.
         '''
         ret = [0] * 324
         row_col_const_idx = row * 9 + col
@@ -80,14 +82,17 @@ class SudokuSolver:
 
     def creatematslice(self, row: int, col: int) -> List[List[int]]:
         '''
-        Creates a slice of the matrix.
+        Creates a slice of the exact cover matrix corresponding to the given row and column.
         '''
         return [self.generatematrow(row, col, digit) for digit in range(9)]
 
 
     def dumpmatrix(self, m: List[List[int]], row_map: List[Tuple[int, int, int]]) -> None:
+        '''
+        Dumps the given exact cover matrix to a file named 'matrix_dump.txt'.
+        '''
         with open('matrix_dump.txt', 'w+') as file:
-            lines = ['       ' + (''.join(str(i) for i in range(9)) * 9 * 4) + '\n']
+            lines = ['       ' + (''.join(str(i) for i in range(9)) * 9 * 4) + '\n']  # initialize with header
             for i, r in enumerate(m):
                 res = f'r{row_map[i][0]}c{row_map[i][1]}#{row_map[i][2]} ' +\
                         ''.join(map(lambda c: str(c) if c != 0 else ' ', r)) + '\n'
