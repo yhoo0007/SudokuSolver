@@ -2,6 +2,7 @@ import os
 from exactcover import createdancinglinks, exactcover
 from typing import List, Optional
 from timeit import default_timer as timer
+import warnings
 
 
 class SudokuSolver:
@@ -17,6 +18,8 @@ class SudokuSolver:
             for line in map(str.strip, file.readlines()):
                 row = list(map(int, line.split(' ')))
                 puzzle.append(row)
+        if len(puzzle) != 9 or not all([len(row) == 9 for row in puzzle]):
+            warnings.warn('Malformed puzzle read!')
         return puzzle
 
 
