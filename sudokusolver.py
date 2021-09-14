@@ -1,5 +1,5 @@
 import os
-from exactcover import createdancinglinks, exactcover
+from exactcover import createnodematrix, exactcover
 from typing import List, Optional, Tuple
 from timeit import default_timer as timer
 import warnings
@@ -33,10 +33,10 @@ class SudokuSolver:
         '''
         # create exact cover matrix from puzzle
         matrix, row_map = self.creatematrix()
+        node_matrix = createnodematrix(matrix, len(matrix), len(matrix[0]))
 
         # run exact cover
-        dl = createdancinglinks(matrix)
-        ans = exactcover(dl, partial_solution=[])
+        ans = exactcover(node_matrix, partial_solution=[])
 
         # translate exact cover result to solution
         for row, col, digit in map(lambda a: row_map[a.row], ans):
