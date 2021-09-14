@@ -27,11 +27,20 @@
 # Select row F:
 # Matrix is empty, hence this branch terminates successfully. Rows B, D, and F are returned as the solution.
 
-from typing import List
+from typing import List, Optional, Tuple
 
 
 class Node:
-    def __init__(self, val, row, col, left=None, right=None, up=None, down=None) -> None:
+    def __init__(
+        self,
+        val,
+        row: int,
+        col: int,
+        left: Optional['Node']=None,
+        right: Optional['Node']=None,
+        up: Optional['Node']=None,
+        down: Optional['Node']=None
+    ) -> None:
         self.val = val
         self.row = row
         self.col = col
@@ -40,18 +49,21 @@ class Node:
         self.up = up
         self.down = down
         self.removed = False
-    
+
+
     def __repr__(self) -> str:
         return f'{self.val} ({self.row}, {self.col})'
 
 
-def printdancinglinks(dl, n_rows, n_cols):
+def printnodematrix(node_matrix: Node, n_rows: int, n_cols: int) -> None:
+    '''
+    Prints the node matrix.
+    '''
     res = [['+' for _ in range(n_cols)] for _ in range(n_rows)]
     
-    # traverse dl column by column
-    current_col = dl.right
-    while current_col != dl:
-        # traverse down the column
+    # traverse node_matrix column by column
+    current_col = node_matrix.right
+    while current_col != node_matrix:
         current_node = current_col.down
         while current_node != current_col:
             res[current_node.row][current_node.col] = '1'
@@ -61,10 +73,11 @@ def printdancinglinks(dl, n_rows, n_cols):
     print(' '.join(map(str, range(n_cols))) + '\n' + '\n'.join([' '.join(map(str, row)) for row in res]))
 
 
-def createdancinglinks(mat) -> Node:
-    num_rows = len(mat)
-    num_cols = len(mat[0])
-
+def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> Node:
+    '''
+    Creates a node representation of the given matrix. Every node is connected to the 4 adjacent
+    nodes. The connections are circular. Returns the head node.
+    '''
     heads = [None] * num_cols  # stores the column header nodes
     tails = [None] * num_cols  # stores the column tail nodes
     head = Node('h', 0, 0)
@@ -72,7 +85,7 @@ def createdancinglinks(mat) -> Node:
 
     # create column header nodes
     for col in range(num_cols):
-        node = Node(val=0, row=-1, col=col)
+        node = Node(val=None, row=-1, col=col)
         heads[col] = node
         tails[col] = node
         node.left = prev
@@ -90,7 +103,6 @@ def createdancinglinks(mat) -> Node:
                 node = Node(val=1, row=row, col=col)
 
                 # link new node to its column
-                # heads[col].val += 1
                 node.up = tails[col]
                 tails[col].down = node
                 tails[col] = node
@@ -115,9 +127,13 @@ def createdancinglinks(mat) -> Node:
     return head
 
 
-def exactcover(dl, partial_solution=[]):
-    selected_col, selected_count = selectcol(dl)
-    if selected_col == dl:  # empty matrix, partial solution is a complete solution
+def exactcover(node_matrix: Node, partial_solution: List[Node]=[]) -> Optional[List[Node]]:
+    '''
+    Finds a subset of rows from the node matrix which solves the exact cover problem or None if no
+    solution is found.
+    '''
+    selected_col, selected_count = selectcol(node_matrix)
+    if selected_col == node_matrix:  # empty matrix, partial solution is a complete solution
         return partial_solution
     
     # if the column has no '1's, an exact cover is impossible
@@ -152,7 +168,7 @@ def exactcover(dl, partial_solution=[]):
             deleting_col = deleting_col.right
 
         # recurse with the reduced dancing links
-        ret = exactcover(dl, partial_solution)
+        ret = exactcover(node_matrix, partial_solution)
         if ret is not None:
             return ret
 
@@ -167,12 +183,15 @@ def exactcover(dl, partial_solution=[]):
     return None
 
 
-def selectcol(dl) -> Node:
-    # count the number of '1's in each column and return the column with the least
-    current = dl.right
-    selected_col = dl.right
+def selectcol(node_matrix: Node) -> Tuple[Node, int]:
+    '''
+    Selects the column with the fewest number of nodes.
+    '''
+    # count the number of nodes in each column and return the column with the fewest
+    current = node_matrix.right
+    selected_col = node_matrix.right
     selected_count = None
-    while current != dl:
+    while current != node_matrix:
         current_row = current
         count = 0
         while current_row.down != current:
@@ -245,8 +264,8 @@ if __name__ == '__main__':
         [0,1,0,0,0,0,1]
     ]
 
-    dl = createdancinglinks(mat)
-    printdancinglinks(dl, n_rows=len(mat), n_cols=len(mat[0]))
+    node_matrix = createnodematrix(mat, len(mat), len(mat[0]))
+    printnodematrix(node_matrix, n_rows=len(mat), n_cols=len(mat[0]))
 
-    ret = exactcover(dl)
+    ret = exactcover(node_matrix)
     print(ret)
