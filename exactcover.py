@@ -263,9 +263,11 @@ if __name__ == '__main__':
         [0,1,1,0,0,1,1],
         [0,1,0,0,0,0,1]
     ]
+    num_rows = len(mat)
+    num_cols = len(mat[0])
 
-    node_matrix = createnodematrix(mat, len(mat), len(mat[0]))
-    printnodematrix(node_matrix, n_rows=len(mat), n_cols=len(mat[0]))
+    node_matrix = createnodematrix(mat, num_rows, num_cols)
+    printnodematrix(node_matrix, n_rows=num_rows, n_cols=num_cols)
 
     ret = exactcover(node_matrix)
     print(ret)
