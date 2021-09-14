@@ -109,14 +109,40 @@ class SudokuSolver:
 
 
 if __name__ == '__main__':
+    def verifysolution(solution: List[List[int]]):
+        # check each row
+        for row in solution:
+            row_set = set(row)
+            if not all([n in row_set for n in range(1, 10)]):
+                return False
+        
+        # check each column
+        for i in range(len(solution)):
+            col_set = set([row[i] for row in solution])
+            if not all([n in col_set for n in range(1, 10)]):
+                return False
+
+        # check each box
+        for i in range(0, len(solution), 3):
+            for j in range(0, len(solution), 3):
+                box_set = set([n for sub in [row[i: i + 3] for row in solution[j: j + 3]] for n in sub])
+                if not all([n in box_set for n in range(1, 10)]):
+                    return False
+        return True
+                
+
     times = []
     for dir, _, files in os.walk('./puzzles'):
         for i, file in enumerate(files):
             puzzle = SudokuSolver(SudokuSolver.readtxt(f'{dir}/{file}'))
             print(i, file)
             time_taken = timer()
-            puzzle.solve()
+            solution = puzzle.solve()
             time_taken = timer() - time_taken
+            correct = verifysolution(solution)
+            if not correct:
+                print('Incorrect solution found!')
+                break
             print('Time taken:', time_taken)
             times.append(time_taken)
 
