@@ -68,11 +68,12 @@ class SudokuSolver:
         Generates a row of the exact cover matrix corresponding to the given row, column, and
         digit. Digit given should be from 0-8 inclusive.
         '''
+        offset = 81
         ret = [0] * 324
         row_col_const_idx = row * 9 + col
-        row_num_const_idx = row * 9 + digit + (9 * 9)
-        col_num_const_idx = col * 9 + digit + (9 * 9 * 2)
-        box_num_const_idx = (row // 3) * (9 * 3) + (col // 3) * 9 + digit + (9 * 9 * 3)
+        row_num_const_idx = row * 9 + digit + offset
+        col_num_const_idx = col * 9 + digit + (offset * 2)
+        box_num_const_idx = (row // 3) * (9 * 3) + (col // 3) * 9 + digit + (offset * 3)
         ret[row_col_const_idx] = 1
         ret[row_num_const_idx] = 1
         ret[col_num_const_idx] = 1
