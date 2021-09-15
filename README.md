@@ -1,9 +1,9 @@
 # Python Sudoku Solver
-A Sudoku solver written in Python. This solver works by transforming the Sudoku puzzle to an exact cover problem, and then using Knuth's Algorithm X to find a solution which is transformed back to the final completed puzzle.
+A Sudoku solver written in Python. This solver works by transforming the Sudoku puzzle to an exact cover problem, then using Knuth's Algorithm X to find a solution which is finally transformed back to the final completed puzzle.
 
 ### Explanation
 ##### Exact Cover
-The exact cover problem is to find a subset of rows of a binary matrix such that when combined, each column of the subset contains a single '1'. I.e. the rows combined **exactly** cover all the columns. For example given the following matrix:
+The exact cover problem is to find a subset of rows of a binary matrix such that when combined, each column of the subset contains one and only one '1', i.e. the rows combined **exactly** cover all the columns. For example given the following matrix:
 |   | A | B | C |
 | - | - | - | - |
 | 1 | 0 | 1 | 0 |
@@ -13,13 +13,13 @@ The exact cover problem is to find a subset of rows of a binary matrix such that
 The solution to the exact cover problem is rows {1, 2}. This is because {0, 1, 0} combined with {1, 0, 1} = {1, 1, 1}: there is one and only one '1' in each column.
 
 ##### Sudoku As An Exact Cover Problem
-A Sudoku puzzle can be modelled using such a matrix where each row represents the option of placing a particular digit in a particular square and the columns represent the constraints of the puzzle:
+A Sudoku puzzle can be modelled using such a matrix where each row represents an option of placing a particular digit in a particular square and the columns represent the constraints of the puzzle:
  - There can only be one number in each square
  - Each row must contain each number exactly once
  - Each column must contain each number exactly once
  - Each box must contain each number exactly once
 
-The solution to the puzzle can then be found by solving the exact cover problem on the matrix.
+An exact cover of this matrix would represent an assignment of digits to the squares such that all the constraints for each square is satisfied **and** there are no overlaps.
 
 ### Example
 The complete matrix representing an empty Sudoku puzzle can be found [here][blank-puzzle-matrix] or [here][exact-cover-full-matrix] (external link with some additional explanation).
