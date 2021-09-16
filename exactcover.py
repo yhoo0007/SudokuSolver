@@ -27,19 +27,20 @@
 # Select row F:
 # Matrix is empty, hence this branch terminates successfully. Rows B, D, and F are returned as the solution.
 
+from abc import ABC
 from typing import List, Optional, Tuple
 
 
-class Node:
+class NodeBase(ABC):
     def __init__(
         self,
         val,
         row: int,
         col: int,
-        left: Optional['Node']=None,
-        right: Optional['Node']=None,
-        up: Optional['Node']=None,
-        down: Optional['Node']=None
+        left: Optional['NodeBase']=None,
+        right: Optional['NodeBase']=None,
+        up: Optional['NodeBase']=None,
+        down: Optional['NodeBase']=None
     ) -> None:
         self.val = val
         self.row = row
@@ -55,7 +56,37 @@ class Node:
         return f'{self.val} ({self.row}, {self.col})'
 
 
-def printnodematrix(node_matrix: Node, n_rows: int, n_cols: int) -> None:
+class ColumnHeaderNode(NodeBase):
+    def __repr__(self) -> str:
+        return f'CH {super().__repr__()}'
+
+
+class HeadNode(NodeBase):
+    def __repr__(self) -> str:
+        return f'H {super().__repr__()}'
+
+
+class Node(NodeBase):
+    def __init__(
+        self,
+        val,
+        row: int,
+        col: int,
+        col_header: ColumnHeaderNode,
+        left: Optional['NodeBase']=None,
+        right: Optional['NodeBase']=None,
+        up: Optional['NodeBase']=None,
+        down: Optional['NodeBase']=None
+    ) -> None:
+        super().__init__(val, row, col, left=left, right=right, up=up, down=down)
+        self.col_header = col_header
+
+
+    def __repr__(self) -> str:
+        return f'N {super().__repr__()}'
+
+
+def printnodematrix(node_matrix: HeadNode, n_rows: int, n_cols: int) -> None:
     '''
     Prints the node matrix.
     '''
@@ -73,24 +104,21 @@ def printnodematrix(node_matrix: Node, n_rows: int, n_cols: int) -> None:
     print(' '.join(map(str, range(n_cols))) + '\n' + '\n'.join([' '.join(map(str, row)) for row in res]))
 
 
-def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> Node:
+def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> HeadNode:
     '''
     Creates a node representation of the given matrix. Every node is connected to the 4 adjacent
     nodes. The connections are circular. Returns the head node.
     '''
-    heads = [None] * num_cols  # stores the column header nodes
-    tails = [None] * num_cols  # stores the column tail nodes
-    head = Node('h', 0, 0)
+    head = HeadNode('h', 0, 0)
     prev = head
 
     # create column header nodes
-    for col in range(num_cols):
-        node = Node(val=None, row=-1, col=col)
-        heads[col] = node
-        tails[col] = node
-        node.left = prev
-        prev.right = node
-        prev = node
+    heads = [ColumnHeaderNode(0, 0, 0) for _ in range(num_cols)]
+    tails = [col_head for col_head in heads]
+    for col_node in heads:
+        col_node.left = prev
+        prev.right = col_node
+        prev = col_node
     head.left = prev
     prev.right = head
 
@@ -100,12 +128,13 @@ def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> Node
         prev = None
         for col in range(num_cols):
             if mat[row][col] == 1:  # only create nodes for '1's
-                node = Node(val=1, row=row, col=col)
+                node = Node(val=1, row=row, col=col, col_header=heads[col])
 
                 # link new node to its column
                 node.up = tails[col]
                 tails[col].down = node
                 tails[col] = node
+                node.col_header.val += 1
 
                 if first is None:  # track first node created
                     first = node
@@ -127,7 +156,7 @@ def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> Node
     return head
 
 
-def exactcover(node_matrix: Node, partial_solution: List[Node]=[]) -> Optional[List[Node]]:
+def exactcover(node_matrix: HeadNode, partial_solution: List[Node]=[]) -> Optional[List[Node]]:
     '''
     Finds a subset of rows from the node matrix which solves the exact cover problem or None if no
     solution is found.
@@ -135,11 +164,11 @@ def exactcover(node_matrix: Node, partial_solution: List[Node]=[]) -> Optional[L
     selected_col, selected_count = selectcol(node_matrix)
     if selected_col == node_matrix:  # empty matrix, partial solution is a complete solution
         return partial_solution
-    
+
     # if the column has no '1's, an exact cover is impossible
     if selected_count == 0:
         return None
-    
+
     # iterate through the rows which are '1's
     current_row = selected_col.down
     while current_row != selected_col:  # current_row guaranteed != header node
@@ -154,7 +183,7 @@ def exactcover(node_matrix: Node, partial_solution: List[Node]=[]) -> Optional[L
             # iterate each row in that column
             deleting_row = deleting_col
             while True:
-                if deleting_row.row != -1: # skip header row
+                if type(deleting_row) == Node: # skip header rows
                     deleted_nodes += removerow(deleting_row)
 
                 if deleting_row.down == deleting_row:
@@ -183,24 +212,18 @@ def exactcover(node_matrix: Node, partial_solution: List[Node]=[]) -> Optional[L
     return None
 
 
-def selectcol(node_matrix: Node) -> Tuple[Node, int]:
+def selectcol(node_matrix: HeadNode) -> Tuple[ColumnHeaderNode, int]:
     '''
     Selects the column with the fewest number of nodes.
     '''
-    # count the number of nodes in each column and return the column with the fewest
     current = node_matrix.right
     selected_col = node_matrix.right
     selected_count = None
     while current != node_matrix:
-        current_row = current
-        count = 0
-        while current_row.down != current:
-            current_row = current_row.down
-            count += 1
-        if selected_count is None or count < selected_count:
-            selected_count = count
+        if selected_count is None or current.val < selected_count:
             selected_col = current
-            if selected_count == 0:  # terminate early if an empty column is found
+            selected_count = current.val
+            if selected_count == 0:  # terminate early if empty column is found
                 return selected_col, selected_count
         current = current.right
     return selected_col, selected_count
@@ -238,6 +261,8 @@ def removenode(node: Node) -> Node:
     node.right.left = node.left
     node.up.down = node.down
     node.down.up = node.up
+    if type(node) == Node:
+        node.col_header.val -= 1
     node.removed = True
     return node
 
@@ -250,6 +275,8 @@ def restorenode(node: Node) -> Node:
     node.right.left = node
     node.up.down = node
     node.down.up = node
+    if type(node) == Node:
+        node.col_header.val += 1
     node.removed = False
     return node
 
