@@ -27,9 +27,10 @@ class SudokuSolver:
         self.puzzle = puzzle
 
 
-    def solve(self) -> List[List[int]]:
+    def solve(self) -> Tuple[List[List[int]], bool]:
         '''
-        Attempts to solve the current puzzle state.
+        Attempts to solve the current puzzle state. Returns the final puzzle state and a bool value
+        indicating if a solution was found.
         '''
         # create exact cover matrix from puzzle
         matrix, row_map = self.creatematrix()
@@ -38,11 +39,12 @@ class SudokuSolver:
         # run exact cover
         ans = exactcover(node_matrix, partial_solution=[])
 
-        # translate exact cover result to solution
-        for row, col, digit in map(lambda a: row_map[a.row], ans):
-            self.puzzle[row][col] = digit
-
-        return self.puzzle
+        # translate exact cover solution to puzzle solution
+        if ans:
+            for row, col, digit in map(lambda a: row_map[a.row], ans):
+                self.puzzle[row][col] = digit
+            return self.puzzle, True
+        return self.puzzle, False
 
 
     def creatematrix(self) -> Tuple[List[List[int]], List[Tuple[int, int, int]]]:
