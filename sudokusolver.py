@@ -33,7 +33,7 @@ class SudokuSolver:
         '''
         # create exact cover matrix from puzzle
         matrix, row_map = self.creatematrix()
-        node_matrix = createnodematrix(matrix, len(matrix), len(matrix[0]))
+        node_matrix = createnodematrix(matrix, len(matrix), 324)
 
         # run exact cover
         ans = exactcover(node_matrix, partial_solution=[])
@@ -47,7 +47,8 @@ class SudokuSolver:
 
     def creatematrix(self) -> Tuple[List[List[int]], List[Tuple[int, int, int]]]:
         '''
-        Creates the exact cover matrix from current puzzle state. Refer to 
+        Creates a compressed version of the exact cover matrix from current puzzle state. Refer to 
+        ./examples/*_puzzle_matrix.txt for an example or
         https://www.stolaf.edu/people/hansonr/sudoku/exactcovermatrix.htm for more info.
         '''
         mat = []
@@ -74,11 +75,7 @@ class SudokuSolver:
         row_num_const_idx = row * 9 + digit + offset
         col_num_const_idx = col * 9 + digit + (offset * 2)
         box_num_const_idx = (row // 3) * (9 * 3) + (col // 3) * 9 + digit + (offset * 3)
-        ret[row_col_const_idx] = 1
-        ret[row_num_const_idx] = 1
-        ret[col_num_const_idx] = 1
-        ret[box_num_const_idx] = 1
-        return ret
+        return [row_col_const_idx, row_num_const_idx, col_num_const_idx, box_num_const_idx]
 
 
     def creatematslice(self, row: int, col: int) -> List[List[int]]:

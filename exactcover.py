@@ -104,7 +104,7 @@ def printnodematrix(node_matrix: HeadNode, n_rows: int, n_cols: int) -> None:
     print(' '.join(map(str, range(n_cols))) + '\n' + '\n'.join([' '.join(map(str, row)) for row in res]))
 
 
-def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> HeadNode:
+def createnodematrix(mat: List[List[int]], n_rows: int, n_cols: int) -> HeadNode:
     '''
     Creates a node representation of the given matrix. Every node is connected to the 4 adjacent
     nodes. The connections are circular. Returns the head node.
@@ -113,7 +113,7 @@ def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> Head
     prev = head
 
     # create column header nodes
-    heads = [ColumnHeaderNode(0, 0, 0) for _ in range(num_cols)]
+    heads = [ColumnHeaderNode(0, 0, 0) for _ in range(n_cols)]
     tails = [col_head for col_head in heads]
     for col_node in heads:
         col_node.left = prev
@@ -123,33 +123,32 @@ def createnodematrix(mat: List[List[int]], num_rows: int, num_cols: int) -> Head
     prev.right = head
 
     # create matrix of nodes row by row
-    for row in range(num_rows):
+    for row_num in range(n_rows):
         first = None
         prev = None
-        for col in range(num_cols):
-            if mat[row][col] == 1:  # only create nodes for '1's
-                node = Node(val=1, row=row, col=col, col_header=heads[col])
+        for col in mat[row_num]:
+            node = Node(val=1, row=row_num, col=col, col_header=heads[col])
 
-                # link new node to its column
-                node.up = tails[col]
-                tails[col].down = node
-                tails[col] = node
-                node.col_header.val += 1
+            # link new node to its column
+            node.up = tails[col]
+            tails[col].down = node
+            tails[col] = node
+            node.col_header.val += 1
 
-                if first is None:  # track first node created
-                    first = node
-                if prev:  # link new node to the previous node created
-                    node.left = prev
-                    prev.right = node
-                prev = node
+            if first is None:  # track first node created
+                first = node
+            if prev:  # link new node to the previous node created
+                node.left = prev
+                prev.right = node
+            prev = node
 
-        # wrap the list around if > 0 nodes were created
+        # wrap the row around if any nodes were created
         if first is not None:
             first.left = prev
             prev.right = first
 
     # wrap the tails of each column back to their heads
-    for col in range(num_cols):
+    for col in range(n_cols):
         tails[col].down = heads[col]
         heads[col].up = tails[col]
 
@@ -290,11 +289,19 @@ if __name__ == '__main__':
         [0,1,1,0,0,1,1],
         [0,1,0,0,0,0,1]
     ]
-    num_rows = len(mat)
-    num_cols = len(mat[0])
+    comp_mat = [
+        [0,3,6],
+        [0,3],
+        [3,4,6],
+        [2,4,5],
+        [1,2,5,6],
+        [1,6]
+    ]
+    n_rows = len(mat)
+    n_cols = len(mat[0])
 
-    node_matrix = createnodematrix(mat, num_rows, num_cols)
-    printnodematrix(node_matrix, n_rows=num_rows, n_cols=num_cols)
+    node_matrix = createnodematrix(comp_mat, n_rows, n_cols)
+    printnodematrix(node_matrix, n_rows=n_rows, n_cols=n_cols)
 
     ret = exactcover(node_matrix)
     print(ret)
