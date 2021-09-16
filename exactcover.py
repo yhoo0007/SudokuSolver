@@ -104,10 +104,10 @@ def printnodematrix(node_matrix: HeadNode, n_rows: int, n_cols: int) -> None:
     print(' '.join(map(str, range(n_cols))) + '\n' + '\n'.join([' '.join(map(str, row)) for row in res]))
 
 
-def createnodematrix(mat: List[List[int]], n_rows: int, n_cols: int) -> HeadNode:
+def createnodematrix(comp_mat: List[List[int]], n_rows: int, n_cols: int) -> HeadNode:
     '''
-    Creates a node representation of the given matrix. Every node is connected to the 4 adjacent
-    nodes. The connections are circular. Returns the head node.
+    Creates a node representation of the given compressed matrix. Every node is connected to the 4
+    adjacent nodes. The connections are circular. Returns the head node.
     '''
     head = HeadNode('h', 0, 0)
     prev = head
@@ -124,9 +124,9 @@ def createnodematrix(mat: List[List[int]], n_rows: int, n_cols: int) -> HeadNode
 
     # create matrix of nodes row by row
     for row_num in range(n_rows):
-        first = None
-        prev = None
-        for col in mat[row_num]:
+        row_head = None
+        row_tail = None
+        for col in comp_mat[row_num]:
             node = Node(val=1, row=row_num, col=col, col_header=heads[col])
 
             # link new node to its column
@@ -135,17 +135,17 @@ def createnodematrix(mat: List[List[int]], n_rows: int, n_cols: int) -> HeadNode
             tails[col] = node
             node.col_header.val += 1
 
-            if first is None:  # track first node created
-                first = node
-            if prev:  # link new node to the previous node created
-                node.left = prev
-                prev.right = node
-            prev = node
+            if row_head is None:
+                row_head = node
+            if row_tail:  # link new node to the previous node created
+                node.left = row_tail
+                row_tail.right = node
+            row_tail = node
 
         # wrap the row around if any nodes were created
-        if first is not None:
-            first.left = prev
-            prev.right = first
+        if row_head is not None:
+            row_head.left = row_tail
+            row_tail.right = row_head
 
     # wrap the tails of each column back to their heads
     for col in range(n_cols):
@@ -200,7 +200,7 @@ def exactcover(node_matrix: HeadNode, partial_solution: List[Node]=[]) -> Option
         if ret is not None:
             return ret
 
-        # restore state
+        # restore state before moving on
         partial_solution.pop()
         for node in deleted_nodes:
             restorenode(node)
@@ -296,7 +296,7 @@ if __name__ == '__main__':
         [2,4,5],
         [1,2,5,6],
         [1,6]
-    ]
+    ]  # this is the compressed version of the matrix above that will be used
     n_rows = len(mat)
     n_cols = len(mat[0])
 
