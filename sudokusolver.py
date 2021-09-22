@@ -3,6 +3,7 @@ from exactcover import createnodematrix, exactcover
 from typing import List, Optional, Tuple
 from timeit import default_timer as timer
 import warnings
+import csv
 
 
 class SudokuSolver:
@@ -107,43 +108,70 @@ class SudokuSolver:
         return res
 
 
-if __name__ == '__main__':
-    def verifysolution(solution: List[List[int]]):
-        # check each row
-        for row in solution:
-            row_set = set(row)
-            if not all([n in row_set for n in range(1, 10)]):
-                return False
-        
-        # check each column
-        for i in range(len(solution)):
-            col_set = set([row[i] for row in solution])
-            if not all([n in col_set for n in range(1, 10)]):
-                return False
-
-        # check each box
-        for i in range(0, len(solution), 3):
-            for j in range(0, len(solution), 3):
-                box_set = set([n for sub in [row[i: i + 3] for row in solution[j: j + 3]] for n in sub])
-                if not all([n in box_set for n in range(1, 10)]):
-                    return False
-        return True
-                
-
-    times = []
-    for dir, _, files in os.walk('./puzzles'):
-        for i, file in enumerate(files):
-            puzzle = SudokuSolver(SudokuSolver.readtxt(f'{dir}/{file}'))
-            print(i, file)
-            time_taken = timer()
-            solution = puzzle.solve()
-            time_taken = timer() - time_taken
-            correct = verifysolution(solution)
-            if not correct:
-                print('Incorrect solution found!')
+def readpuzzles(fp: str, limit=100):
+    '''
+    Reads puzzles from a csv file with the following format:
+    puzzles, solution
+    100000090208970605000532000006050400700806002083700010604080120890600050015040007,157468293238971645469532781926153478741896532583724916674385129892617354315249867
+    205040003001009000046001587004607090802000056090020340170008200000500800500903001,285746913731859624946231587354687192812394756697125348179468235463512879528973461
+    .
+    .
+    .
+    '''
+    puzzles = []
+    with open(fp) as csv_file:
+        count = 0
+        limit = 500
+        for row in csv.reader(csv_file, delimiter=','):
+            if count > 0:
+                puzzle, solution = row
+                puzzle = [[int(puzzle[i + j]) for i in range(0, 81, 9)] for j in range(9)]
+                solution = [[int(solution[i + j]) for i in range(0, 81, 9)] for j in range(9)]
+                puzzles.append((puzzle, solution))
+            if count >= limit:
                 break
-            print('Time taken:', time_taken)
-            times.append(time_taken)
+            count += 1
+    return puzzles
+
+
+def verifysolution(solution: List[List[int]]):
+    '''
+    Verifies the given Sudoku solution.
+    '''
+    # check each row
+    for row in solution:
+        row_set = set(row)
+        if not all([n in row_set for n in range(1, 10)]):
+            return False
+    
+    # check each column
+    for i in range(len(solution)):
+        col_set = set([row[i] for row in solution])
+        if not all([n in col_set for n in range(1, 10)]):
+            return False
+
+    # check each box
+    for i in range(0, len(solution), 3):
+        for j in range(0, len(solution), 3):
+            box_set = set([n for sub in [row[i: i + 3] for row in solution[j: j + 3]] for n in sub])
+            if not all([n in box_set for n in range(1, 10)]):
+                return False
+    return True
+
+
+if __name__ == '__main__':
+    times = []
+    for puzzle, s in readpuzzles('./puzzles/sudoku.csv'):
+        puzzle = SudokuSolver(puzzle)
+        time_taken = timer()
+        solution, solved = puzzle.solve()
+        time_taken = timer() - time_taken
+        correct = verifysolution(solution)
+        if not correct:
+            print('Incorrect solution found!')
+            break
+        print('Time taken:', time_taken)
+        times.append(time_taken)
 
     times.sort()
     len_times = len(times)
