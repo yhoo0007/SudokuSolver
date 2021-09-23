@@ -155,18 +155,20 @@ def createnodematrix(comp_mat: List[List[int]], n_rows: int, n_cols: int) -> Hea
     return head
 
 
-def exactcover(node_matrix: HeadNode, partial_solution: List[Node]=[]) -> Optional[List[Node]]:
+def exactcover(node_matrix: HeadNode, partial_solution: List[Node]=[], all_solutions: List[Node]=[]) -> List[List[Node]]:
     '''
     Finds a subset of rows from the node matrix which solves the exact cover problem or None if no
     solution is found.
     '''
     selected_col, selected_count = selectcol(node_matrix)
     if selected_col == node_matrix:  # empty matrix, partial solution is a complete solution
-        return partial_solution
+        all_solutions.append(partial_solution[:])
+        # return partial_solution
+        return
 
     # if the column has no '1's, an exact cover is impossible
     if selected_count == 0:
-        return None
+        return
 
     # iterate through the rows which are '1's
     current_row = selected_col.down
@@ -196,9 +198,9 @@ def exactcover(node_matrix: HeadNode, partial_solution: List[Node]=[]) -> Option
             deleting_col = deleting_col.right
 
         # recurse with the reduced dancing links
-        ret = exactcover(node_matrix, partial_solution)
-        if ret is not None:
-            return ret
+        exactcover(node_matrix, partial_solution, all_solutions)
+        # if ret is not None:
+        #     return ret
 
         # restore state before moving on
         partial_solution.pop()
@@ -208,7 +210,7 @@ def exactcover(node_matrix: HeadNode, partial_solution: List[Node]=[]) -> Option
         current_row = current_row.down
     
     # no solution was found
-    return None
+    return
 
 
 def selectcol(node_matrix: HeadNode) -> Tuple[ColumnHeaderNode, int]:

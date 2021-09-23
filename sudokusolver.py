@@ -38,11 +38,12 @@ class SudokuSolver:
         node_matrix = createnodematrix(matrix, len(matrix), 324)
 
         # run exact cover
-        ans = exactcover(node_matrix, partial_solution=[])
+        ans = []
+        exactcover(node_matrix, all_solutions=ans)
 
-        # translate exact cover solution to puzzle solution
-        if ans:
-            for row, col, digit in map(lambda a: row_map[a.row], ans):
+        # translate exact cover solution to puzzle solution, takes only the first solution found
+        if len(ans) > 0:
+            for row, col, digit in map(lambda a: row_map[a.row], ans[0]):
                 self.puzzle[row][col] = digit
             return self.puzzle, True
         return self.puzzle, False
@@ -161,7 +162,7 @@ def verifysolution(solution: List[List[int]]):
 
 if __name__ == '__main__':
     times = []
-    for puzzle, s in readpuzzles('./puzzles/sudoku.csv'):
+    for puzzle, s in readpuzzles('./puzzles/sudoku.csv', limit=10000):
         puzzle = SudokuSolver(puzzle)
         time_taken = timer()
         solution, solved = puzzle.solve()
