@@ -283,6 +283,15 @@ def restorenode(node: Node) -> Node:
 
 
 if __name__ == '__main__':
+    def compressmat(mat):
+        comp_mat = []
+        for r in mat:
+            row = []
+            for i, n in enumerate(r):
+                if n == 1:
+                    row.append(i)
+            comp_mat.append(row)
+        return comp_mat
     mat = [
         [1,0,0,1,0,0,1],
         [1,0,0,1,0,0,0],
@@ -291,19 +300,14 @@ if __name__ == '__main__':
         [0,1,1,0,0,1,1],
         [0,1,0,0,0,0,1]
     ]
-    comp_mat = [
-        [0,3,6],
-        [0,3],
-        [3,4,6],
-        [2,4,5],
-        [1,2,5,6],
-        [1,6]
-    ]  # this is the compressed version of the matrix above that will be used
+    comp_mat = compressmat(mat)
     n_rows = len(mat)
     n_cols = len(mat[0])
 
     node_matrix = createnodematrix(comp_mat, n_rows, n_cols)
     printnodematrix(node_matrix, n_rows=n_rows, n_cols=n_cols)
 
-    ret = exactcover(node_matrix)
+    ret = []
+    exactcover(node_matrix, all_solutions=ret)
     print(ret)
+    print(len(ret))
